@@ -14,8 +14,8 @@
             <xs:attribute name="username" type="xs:string" use="required"/>
             <xs:attribute name="computerName" type="xs:string" use="required"/>
             <xs:attribute name="computerIp" type="xs:string" use="required"/>
-            <xs:attribute name="receiptDate" type="xs:string" use="required"/>	
+            <xs:attribute name="receiptDate" type="xs:string" use="required"/>
         </xs:complexType>
-	
+
     </xs:element>
 </xs:schema>
