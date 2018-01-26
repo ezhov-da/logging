@@ -1,0 +1,11 @@
+<%-- any content can be specified here e.g.: --%>
+<%@ page pageEncoding="UTF-8" %>
+
+<br>
+
+<br>
+<div id="footer">
+    <div class="container">
+        <p class="muted credit">По всем вопросам обращайтесь на адрес: Ежов Денис Анатольевич <a href="mailto:ezhov_da@magnit.ru">ezhov_da@magnit.ru</a>.</p>
+    </div>
+</div>

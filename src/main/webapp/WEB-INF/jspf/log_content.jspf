@@ -1,0 +1,143 @@
+<%-- any content can be specified here e.g.: --%>
+<%@page import="ru.ezhov.logging.xml.XmlReader"%>
+<%@ page pageEncoding="UTF-8" %>
+
+<p class="lead">
+    Система логирования - совокупность технологий для осуществления логирования приложений по средствам стандартного протокола HTTP.
+</p>
+
+<p>
+    Для использования системы необходимо:
+</p>
+
+<ol>
+
+    <li>Зарегистрировать Ваше приложение у разработчика по почте: Ежов Денис Анатольевич  <a href="mailto:ezhov_da@magnit.ru">ezhov_da@magnit.ru</a></li>
+    <li>После получения ID приложения использовать его для идентификации при логировании</li>
+</ol>
+
+<br>
+
+<p>
+    Для отправки данных и обработки их сервисом логирования, необходимо описать XML согласно схеме:
+</p>
+<%
+    XmlReader xmlReader = new XmlReader();
+    String text = "";
+%>
+
+<pre><code class="xml"><%
+    text = xmlReader.textSchema();
+    out.print(text);%>
+</code></pre>
+<p>
+    Пример XML Удовлетворяющий указанной схеме:
+</p>
+<pre><code class="xml"><%
+    text = xmlReader.textXml();
+    out.print(text);%>
+</code></pre>
+
+<p>
+    где:
+</p>
+<p>
+    - обязательные атрибуты:
+</p>
+<ul>
+    <li>idTool - ID полученный от разработчика для идентификации</li>
+    <li>idLog - статус лога, существует 7 типов:
+        <p>
+            <strong>SEVERE</strong> = 7     - самая высокая важность<br>
+            <strong>WARNING</strong> = 6    - важно<br>
+            <strong>INFO</strong> = 5       - информационно<br>
+            <strong>CONFIG</strong> = 4     - логирование конфигурации<br>
+            <strong>FINE</strong> = 3       - успешное действие<br>
+            <strong>FINER</strong> = 2      - не важное действие<br>
+            <strong>FINEST</strong> = 1     - любое действие не требующее внимания<br>
+        </p>
+    </li>
+    <li>username - имя пользователя</li>
+    <li>computerName - имя компьютера</li>
+    <li>computerIp - IP компьютера</li>
+    <li>receiptDate - дата отправки лога в формате: 2017-03-24 11:34:00</li>
+</ul>
+
+<p>
+    - необязательные атрибуты:
+</p>
+<ul>
+    <li>messageShot - короткое сообщение
+    <li>messageDetail - детальное сообщение
+    <li>error - ошибка
+    <li>extendedInformation - дополнительная информация, обрабатываемая в разрезе уникальности ID приложения/пользователя
+</ul>
+<p>
+    Отправить сформированный XML POST запросом на URL: <strong><%=getServletConfig().getServletContext().getContextPath()%>/logger</strong>
+</p>
+
+
+<br>
+
+<p>
+    Для удобства работы с сервисом логирования релизован модуль VBA:
+</p>
+<ul>
+    <li><a href="src/bas/WebLogging.bas"> посмотреть</a></li>
+    <li><a href="src/bas/WebLogging.bas" download> скачать</a></li>
+</ul>
+<p>
+    , который предоставляет удобные методы для 
+    взаимодействия с сервисом.
+</p>
+
+<p>
+    Для работы с модулем необходимо:
+</p>
+
+<ol>
+    <li>Импортировать модуль в свой проект</li>
+    <li>
+        <p>
+            Подключить указанную зависимость, если зависимости указанной версии нет, выбрать другую доступную версию.
+        <img src="src/icon/references.png"/></li>
+
+    <p>
+        ВАЖНО! Если вы подключаете версию ниже 3.0 необходимо в подключаемом модуле откорректировать используемые библиотеки в части:<br>
+    <ul>
+        <li>было: MSXML2.XMLHTTP<strong>30</strong> и MSXML2.DOMDocument<strong>30</strong></li>
+        <li>станет: MSXML2.XMLHTTP<strong>ваша версия</strong> и MSXML2.DOMDocument<strong>ваша версия</strong></li>
+    </ul>
+</p>
+</p>
+</li>
+<li>Установить в константу <strong>ID_TOOL</strong> полученный ID для своего проекта</li>
+<li>В случае изменения URL для логирования откорректировать константу <strong>URL</strong></li>
+
+</ol>
+
+<p>
+    Для использования данного модуля в своем коде VBA, можно воспользоваться следующими методами:
+</p>
+<ul>
+    <li>sendLogShort(levelLog, messageShot, messageDetail, extInfo)</li>
+    <li>sendLogLong(levelLog, messageShot, messageDetail, error, extInfo)</li>
+    <li>sendLogFull(username, levelLog , messageShot, messageDetail, error, extInfo)</li>
+</ul>
+
+<p>
+    Для указания уровня лога используется <strong>ENUM</strong> LogLevel из модуля.
+</p>
+<p>
+    При отсутствии аттрибутов, берутся данные по умолчанию.
+</p>
+
+</p>
+Если возникла необходимость полностью управлять передаваемыми данными - можно изменить методы отвечающие за получени этих данных:
+<p>
+<ul>
+    <li>getUsername</li>
+    <li>getComputerName</li>
+    <li>getIpAddress</li>
+    <li>getReceiptDate</li>
+</ul>

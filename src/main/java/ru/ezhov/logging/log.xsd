@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="log">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="messageShot" type="xs:string"/>
+                <xs:element name="messageDetail" type="xs:string"/>
+                <xs:element name="error" type="xs:string"/>
+                <xs:element name="extendedInformation" type="xs:string"/>
+            </xs:sequence>
+
+            <xs:attribute name="idTool" type="xs:integer" use="required"/>
+            <xs:attribute name="idLog" type="xs:integer" use="required"/>
+            <xs:attribute name="username" type="xs:string" use="required"/>
+            <xs:attribute name="computerName" type="xs:string" use="required"/>
+            <xs:attribute name="computerIp" type="xs:string" use="required"/>
+            <xs:attribute name="receiptDate" type="xs:string" use="required"/>	
+        </xs:complexType>
+	
+    </xs:element>
+</xs:schema>
