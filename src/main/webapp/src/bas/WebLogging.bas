@@ -1,28 +1,28 @@
 Attribute VB_Name = "WebLogging"
 '---------------------------------------------------------------------------------------------------------
-'Название:      Модуль логирования VBA для Cистемы логирования
-'Версия модуля: 0.3а
-'Разработчик:   Ежов Денис Анатольевич <ezhov_da@magnit.ru>
-'Описание:      Данный модуль использует HTTP соединение для внесения данных логируемого приложения в БД
+'РќР°Р·РІР°РЅРёРµ:      РњРѕРґСѓР»СЊ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ VBA РґР»СЏ CРёСЃС‚РµРјС‹ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
+'Р’РµСЂСЃРёСЏ РјРѕРґСѓР»СЏ: 0.3Р°
+'Р Р°Р·СЂР°Р±РѕС‚С‡РёРє:   Р•Р¶РѕРІ Р”РµРЅРёСЃ РђРЅР°С‚РѕР»СЊРµРІРёС‡ <ezhov_da@magnit.ru>
+'РћРїРёСЃР°РЅРёРµ:      Р”Р°РЅРЅС‹Р№ РјРѕРґСѓР»СЊ РёСЃРїРѕР»СЊР·СѓРµС‚ HTTP СЃРѕРµРґРёРЅРµРЅРёРµ РґР»СЏ РІРЅРµСЃРµРЅРёСЏ РґР°РЅРЅС‹С… Р»РѕРіРёСЂСѓРµРјРѕРіРѕ РїСЂРёР»РѕР¶РµРЅРёСЏ РІ Р‘Р”
 '---------------------------------------------------------------------------------------------------------
 
 Option Explicit
 
-'КОНСТАНТЫ ДЛЯ ИЗМЕНЕНИЯ РАЗРАБОТЧИКОМ-ПОЛЬЗОВАТЕЛЕМ СИСТЕМЫ-------------------------------------------------------------
+'РљРћРќРЎРўРђРќРўР« Р”Р›РЇ РР—РњР•РќР•РќРРЇ Р РђР—Р РђР‘РћРўР§РРљРћРњ-РџРћР›Р¬Р—РћР’РђРўР•Р›Р•Рњ РЎРРЎРўР•РњР«-------------------------------------------------------------
 
-Private Const ID_TOOL  As String = "1"  'ID выдается при регистрации инструмента логирования
+Private Const ID_TOOL  As String = "1"  'ID РІС‹РґР°РµС‚СЃСЏ РїСЂРё СЂРµРіРёСЃС‚СЂР°С†РёРё РёРЅСЃС‚СЂСѓРјРµРЅС‚Р° Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 
-'URL логирования, меняется только в случае изменения сервера
+'URL Р»РѕРіРёСЂРѕРІР°РЅРёСЏ, РјРµРЅСЏРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ СЃР»СѓС‡Р°Рµ РёР·РјРµРЅРµРЅРёСЏ СЃРµСЂРІРµСЂР°
 Private Const URL  As String = "http://office6887:8080/logging/logger"
 
 
-'КОНСТАНТЫ ДЛЯ ДЛЯ РАЗРАБОТЧИКА НЕ МЕНЯТЬ-------------------------------------------------------------------------------
+'РљРћРќРЎРўРђРќРўР« Р”Р›РЇ Р”Р›РЇ Р РђР—Р РђР‘РћРўР§РРљРђ РќР• РњР•РќРЇРўР¬-------------------------------------------------------------------------------
 
-Private Const DEBUG_MODE  As Boolean = True                                             '- режим логирования
-Private Const METHOD  As String = "POST"                                                '- метод отправки
-Private Const CONTENT_TYPE  As String = "text/xml;charset=utf-8"                        '- тип передаваемых данных
-Private Const ACCEPT_LANG  As String = "en"                                             '- язык
-Private Const NAME_FILE_LOG_STORAGE As String = "NOT_SENT_LOGS_STORAGE_SERVICE.xml"     '- хранилище неотправленных логов
+Private Const DEBUG_MODE  As Boolean = True                                             '- СЂРµР¶РёРј Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
+Private Const METHOD  As String = "POST"                                                '- РјРµС‚РѕРґ РѕС‚РїСЂР°РІРєРё
+Private Const CONTENT_TYPE  As String = "text/xml;charset=utf-8"                        '- С‚РёРї РїРµСЂРµРґР°РІР°РµРјС‹С… РґР°РЅРЅС‹С…
+Private Const ACCEPT_LANG  As String = "en"                                             '- СЏР·С‹Рє
+Private Const NAME_FILE_LOG_STORAGE As String = "NOT_SENT_LOGS_STORAGE_SERVICE.xml"     '- С…СЂР°РЅРёР»РёС‰Рµ РЅРµРѕС‚РїСЂР°РІР»РµРЅРЅС‹С… Р»РѕРіРѕРІ
 Private Const STATUS_OK As String = "OK"
 Private Const STATUS_BAD_REQUEST As String = "Bad Request"
 Private Const STATUS_PAGE_NOT_FOUND As String = "Not Found"
@@ -44,7 +44,7 @@ Private Const ATTRIBUTE_COMPUTER_NAME As String = "computerName"
 Private Const ATTRIBUTE_COMPUTER_IP As String = "computerIp"
 Private Const ATTRIBUTE_RECEIPT_DATE As String = "receiptDate"
 
-'уровни логирования
+'СѓСЂРѕРІРЅРё Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 Public Enum LogLevel
      LOG_LEVEL_SEVERE = 7
      LOG_LEVEL_WARNING = 6
@@ -54,13 +54,13 @@ Public Enum LogLevel
      LOG_LEVEL_FINER = 2
      LOG_LEVEL_FINEST = 1
 End Enum
- 
-'переменная, которая хранит последний текст обработки запроса
-'присваивание запроса происходит только в случает статуса ответа STATUS_BAD_REQUEST
-Private lastTextResponse As String
- 
 
-'МЕТОДЫ ДЛЯ РАБОТЫ С ЛОГИРОВАНИЕ РАЗРАБОТЧИКА ПОЛЬЗОВАТЕЛЯ----------------------------------------------
+'РїРµСЂРµРјРµРЅРЅР°СЏ, РєРѕС‚РѕСЂР°СЏ С…СЂР°РЅРёС‚ РїРѕСЃР»РµРґРЅРёР№ С‚РµРєСЃС‚ РѕР±СЂР°Р±РѕС‚РєРё Р·Р°РїСЂРѕСЃР°
+'РїСЂРёСЃРІР°РёРІР°РЅРёРµ Р·Р°РїСЂРѕСЃР° РїСЂРѕРёСЃС…РѕРґРёС‚ С‚РѕР»СЊРєРѕ РІ СЃР»СѓС‡Р°РµС‚ СЃС‚Р°С‚СѓСЃР° РѕС‚РІРµС‚Р° STATUS_BAD_REQUEST
+Private lastTextResponse As String
+
+
+'РњР•РўРћР”Р« Р”Р›РЇ Р РђР‘РћРўР« РЎ Р›РћР“РР РћР’РђРќРР• Р РђР—Р РђР‘РћРўР§РРљРђ РџРћР›Р¬Р—РћР’РђРўР•Р›РЇ----------------------------------------------
 
 Public Sub sendLogFull( _
     username As String, _
@@ -110,10 +110,10 @@ End Sub
 'V
 
 '----------------------------------------------------------------------------------------------------
-'ВСЕ ЧТО НИЖЕ НЕПОСРЕДСТВЕННО КОД ОБРАБОТКИ, ЕГО НЕ НУЖНО МЕНЯТЬ
+'Р’РЎР• Р§РўРћ РќРР–Р• РќР•РџРћРЎР Р•Р”РЎРўР’Р•РќРќРћ РљРћР” РћР‘Р РђР‘РћРўРљР, Р•Р“Рћ РќР• РќРЈР–РќРћ РњР•РќРЇРўР¬
 '----------------------------------------------------------------------------------------------------
 
-'ИСПОЛЬЗУЕТСЯ ТОЛЬКО РАЗРАБОТЧИКАМИ-------------------------------------------------------------------
+'РРЎРџРћР›Р¬Р—РЈР•РўРЎРЇ РўРћР›Р¬РљРћ Р РђР—Р РђР‘РћРўР§РРљРђРњР-------------------------------------------------------------------
 Public Sub notUseTestLog()
      Call sendLogFull("", LogLevel.LOG_LEVEL_INFO, "ezhov_da", "ezhov_da", "ezhov_da", "")
      'Call sendLogLong("", "", "")
@@ -121,7 +121,7 @@ Public Sub notUseTestLog()
      'Call createXml
 End Sub
 
-'формирование и отправка лога
+'С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Рё РѕС‚РїСЂР°РІРєР° Р»РѕРіР°
 Private Sub logExecutor( _
     username As String, _
     levelLog As LogLevel, _
@@ -141,47 +141,47 @@ Private Sub logExecutor( _
             error, _
             extInfo _
         )
-    
+
     Dim postText As String
     postText = xmlLogNode.xml
-    
+
     Call debugSystem("xml", postText)
 
     Dim statusTextResponse As String
-    
+
     statusTextResponse = logSendToBase(postText)
-   
-    'если получили некорректный запрос, значит проблема
-    'с поступающими данными и разработчик должен сразу откорректировать
+
+    'РµСЃР»Рё РїРѕР»СѓС‡РёР»Рё РЅРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ Р·Р°РїСЂРѕСЃ, Р·РЅР°С‡РёС‚ РїСЂРѕР±Р»РµРјР°
+    'СЃ РїРѕСЃС‚СѓРїР°СЋС‰РёРјРё РґР°РЅРЅС‹РјРё Рё СЂР°Р·СЂР°Р±РѕС‚С‡РёРє РґРѕР»Р¶РµРЅ СЃСЂР°Р·Сѓ РѕС‚РєРѕСЂСЂРµРєС‚РёСЂРѕРІР°С‚СЊ
     If (statusTextResponse = STATUS_BAD_REQUEST) Then
         MsgBox _
-        "Возникла ошибка при при отправке запроса: " & vbNewLine & lastTextResponse, _
+        "Р’РѕР·РЅРёРєР»Р° РѕС€РёР±РєР° РїСЂРё РїСЂРё РѕС‚РїСЂР°РІРєРµ Р·Р°РїСЂРѕСЃР°: " & vbNewLine & lastTextResponse, _
         vbOKOnly, _
-        "Ошибка формирования запроса"
+        "РћС€РёР±РєР° С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р·Р°РїСЂРѕСЃР°"
         Exit Sub
     End If
-   
-    'здесь просто проверяем на ошибку например доступности сервера и производим сохранение
-    'в хранилище xml
+
+    'Р·РґРµСЃСЊ РїСЂРѕСЃС‚Рѕ РїСЂРѕРІРµСЂСЏРµРј РЅР° РѕС€РёР±РєСѓ РЅР°РїСЂРёРјРµСЂ РґРѕСЃС‚СѓРїРЅРѕСЃС‚Рё СЃРµСЂРІРµСЂР° Рё РїСЂРѕРёР·РІРѕРґРёРј СЃРѕС…СЂР°РЅРµРЅРёРµ
+    'РІ С…СЂР°РЅРёР»РёС‰Рµ xml
     If Err.Number > 0 Or statusTextResponse = STATUS_PAGE_NOT_FOUND Then
-    'ВАЖНО! Функция [logSendToBase] использует On Error resume next для отлова ошибок вне функции
-    'после обработки ошибки необходимо восстановить нормальную обработку ошибок
+    'Р’РђР–РќРћ! Р¤СѓРЅРєС†РёСЏ [logSendToBase] РёСЃРїРѕР»СЊР·СѓРµС‚ On Error resume next РґР»СЏ РѕС‚Р»РѕРІР° РѕС€РёР±РѕРє РІРЅРµ С„СѓРЅРєС†РёРё
+    'РїРѕСЃР»Рµ РѕР±СЂР°Р±РѕС‚РєРё РѕС€РёР±РєРё РЅРµРѕР±С…РѕРґРёРјРѕ РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ РЅРѕСЂРјР°Р»СЊРЅСѓСЋ РѕР±СЂР°Р±РѕС‚РєСѓ РѕС€РёР±РѕРє
     On Error GoTo 0
-            Call debugSystem("ошибка", Err.description)
-            Call debugSystem("статус", statusTextResponse)
+            Call debugSystem("РѕС€РёР±РєР°", Err.description)
+            Call debugSystem("СЃС‚Р°С‚СѓСЃ", statusTextResponse)
             Call saveXmlToStorage(xmlLogNode)
         Else
             Call addSaveLogsStorageToBase
     End If
 End Sub
 
-'Отправка лога по URL
+'РћС‚РїСЂР°РІРєР° Р»РѕРіР° РїРѕ URL
 
-'ВАЖНО! Функция [logSendToBase] использует On Error resume next для отлова ошибок вне функции
-'после обработки ошибки необходимо восстановить нормальную обработку ошибок On Error GoTo 0
+'Р’РђР–РќРћ! Р¤СѓРЅРєС†РёСЏ [logSendToBase] РёСЃРїРѕР»СЊР·СѓРµС‚ On Error resume next РґР»СЏ РѕС‚Р»РѕРІР° РѕС€РёР±РѕРє РІРЅРµ С„СѓРЅРєС†РёРё
+'РїРѕСЃР»Рµ РѕР±СЂР°Р±РѕС‚РєРё РѕС€РёР±РєРё РЅРµРѕР±С…РѕРґРёРјРѕ РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ РЅРѕСЂРјР°Р»СЊРЅСѓСЋ РѕР±СЂР°Р±РѕС‚РєСѓ РѕС€РёР±РѕРє On Error GoTo 0
 Private Function logSendToBase(xmlLogNode As String) As String
     On Error Resume Next
-    
+
     Dim oXmlHttp As MSXML2.XMLHTTP30
     Set oXmlHttp = New MSXML2.XMLHTTP30
 
@@ -193,7 +193,7 @@ Private Function logSendToBase(xmlLogNode As String) As String
 
     Dim statusTextResponse As String: statusTextResponse = oXmlHttp.statusText
 
-    Call debugSystem("Статус ответа", statusTextResponse)
+    Call debugSystem("РЎС‚Р°С‚СѓСЃ РѕС‚РІРµС‚Р°", statusTextResponse)
 
     Dim responseText As String
     responseText = oXmlHttp.responseText
@@ -206,12 +206,12 @@ Private Function logSendToBase(xmlLogNode As String) As String
     Set oXmlHttp = Nothing
 
     'Dim generateError As Integer: generateError = 1 / 0
-    
+
     logSendToBase = statusTextResponse
-    
+
 End Function
 
-'Создание XML лога, именно здесь происходит формирование объекта для внесения
+'РЎРѕР·РґР°РЅРёРµ XML Р»РѕРіР°, РёРјРµРЅРЅРѕ Р·РґРµСЃСЊ РїСЂРѕРёСЃС…РѕРґРёС‚ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕР±СЉРµРєС‚Р° РґР»СЏ РІРЅРµСЃРµРЅРёСЏ
 Private Function createXml( _
     usernameParam As String, _
     levelLog As LogLevel, _
@@ -221,93 +221,93 @@ Private Function createXml( _
     extInfoParam As String _
 ) As IXMLDOMNode
     Dim xml As New MSXML2.DOMDocument30
-       
+
     Dim nodeMsgShort As MSXML2.IXMLDOMNode
     Set nodeMsgShort = xml.createNode(1, NODE_MESSAGE_SHORT, "")
-    
+
     Dim nodeMsgShortData As MSXML2.IXMLDOMCharacterData
     Set nodeMsgShortData = xml.createTextNode(messageShotParam)
-    
+
     nodeMsgShort.appendChild nodeMsgShortData
-    
+
     Dim nodeMsgDetail As IXMLDOMNode
     Set nodeMsgDetail = xml.createNode(1, NODE_MESSAGE_DETAIL, "")
-    
+
     Dim nodeMsgDetailData As MSXML2.IXMLDOMCharacterData
     Set nodeMsgDetailData = xml.createTextNode(messageDetailParam)
-    
+
     nodeMsgDetail.appendChild nodeMsgDetailData
-    
+
     Dim nodeMsgError As IXMLDOMNode
     Set nodeMsgError = xml.createNode(1, NODE_ERROR, "")
-    
+
     Dim nodeMsgErrorData As MSXML2.IXMLDOMCharacterData
     Set nodeMsgErrorData = xml.createTextNode(errorParam)
-    
+
     nodeMsgError.appendChild nodeMsgErrorData
-    
+
     Dim nodeMsgExtendedInfo As IXMLDOMNode
     Set nodeMsgExtendedInfo = xml.createNode(1, NODE_EXTENDED_INFORMATION, "")
-    
+
     Dim nodeMsgExtInfoData As MSXML2.IXMLDOMCharacterData
     Set nodeMsgExtInfoData = xml.createTextNode(extInfoParam)
-    
+
     nodeMsgExtendedInfo.appendChild nodeMsgExtInfoData
-       
+
     Dim nodeBasicLog As IXMLDOMNode
     Set nodeBasicLog = xml.createNode(1, NODE_LOG, "")
-    
+
     Dim idTool As IXMLDOMAttribute
     Set idTool = xml.createAttribute(ATTRIBUTE_ID_TOOL)
     idTool.Value = ID_TOOL
-    
+
     Dim idLog As IXMLDOMAttribute
     Set idLog = xml.createAttribute(ATTRIBUTE_ID_LOG)
     idLog.Value = levelLog
-    
+
     Dim username As IXMLDOMAttribute
     Set username = xml.createAttribute(ATTRIBUTE_USERNAME)
     username.Value = getUsername(usernameParam)
-    
+
     Dim computerName As IXMLDOMAttribute
     Set computerName = xml.createAttribute(ATTRIBUTE_COMPUTER_NAME)
     computerName.Value = getComputerName()
-    
+
     Dim computerIp As IXMLDOMAttribute
     Set computerIp = xml.createAttribute(ATTRIBUTE_COMPUTER_IP)
     computerIp.Value = getIpAddress()
-    
+
     Dim receiptDate As IXMLDOMAttribute
     Set receiptDate = xml.createAttribute(ATTRIBUTE_RECEIPT_DATE)
     receiptDate.Value = getReceiptDate()
-    
-   
+
+
     nodeBasicLog.Attributes.setNamedItem idTool
     nodeBasicLog.Attributes.setNamedItem idLog
     nodeBasicLog.Attributes.setNamedItem username
     nodeBasicLog.Attributes.setNamedItem computerName
     nodeBasicLog.Attributes.setNamedItem computerIp
     nodeBasicLog.Attributes.setNamedItem receiptDate
-   
+
     nodeBasicLog.appendChild nodeMsgShort
     nodeBasicLog.appendChild nodeMsgDetail
     nodeBasicLog.appendChild nodeMsgError
     nodeBasicLog.appendChild nodeMsgExtendedInfo
-    
+
     Set createXml = nodeBasicLog
 End Function
 
-'Сохранение лога в хранилище в случае ошибки внесения
+'РЎРѕС…СЂР°РЅРµРЅРёРµ Р»РѕРіР° РІ С…СЂР°РЅРёР»РёС‰Рµ РІ СЃР»СѓС‡Р°Рµ РѕС€РёР±РєРё РІРЅРµСЃРµРЅРёСЏ
 Private Sub saveXmlToStorage(xmlLog As IXMLDOMNode)
-    
+
     Dim logStorageNotBuild As Boolean: logStorageNotBuild = isLogStorageNotBuild()
-    
+
     Dim fullPathToStorage As String: fullPathToStorage = getFullPathToUserLogsStorage
-    
+
     Dim xml As New MSXML2.DOMDocument30
 
     Dim basicNode As IXMLDOMNode
-        
+
     If (logStorageNotBuild) Then
 
         Set basicNode = xml.createNode(1, NODE_LOGS, "")
@@ -318,73 +318,73 @@ Private Sub saveXmlToStorage(xmlLog As IXMLDOMNode)
         Set logsNode = xml.getElementsByTagName(NODE_LOGS)
         Set basicNode = logsNode.Item(0)
     End If
-    
+
     basicNode.appendChild xmlLog
-    
-    Call debugSystem("", "лог сохранен в локальное хранилище")
-    
+
+    Call debugSystem("", "Р»РѕРі СЃРѕС…СЂР°РЅРµРЅ РІ Р»РѕРєР°Р»СЊРЅРѕРµ С…СЂР°РЅРёР»РёС‰Рµ")
+
     xml.Save fullPathToStorage
 End Sub
 
-'Проверка на созданность хранилища
+'РџСЂРѕРІРµСЂРєР° РЅР° СЃРѕР·РґР°РЅРЅРѕСЃС‚СЊ С…СЂР°РЅРёР»РёС‰Р°
 Private Function isLogStorageNotBuild() As Boolean
     Dim pathToStorage As String: pathToStorage = getFullPathToUserLogsStorage()
     isLogStorageNotBuild = Dir(pathToStorage) = ""
-    Call debugSystem("хранилище отсутствует", isLogStorageNotBuild)
+    Call debugSystem("С…СЂР°РЅРёР»РёС‰Рµ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚", isLogStorageNotBuild)
 End Function
 
-'Получение полного пути к хранилищу неотправленных логов
+'РџРѕР»СѓС‡РµРЅРёРµ РїРѕР»РЅРѕРіРѕ РїСѓС‚Рё Рє С…СЂР°РЅРёР»РёС‰Сѓ РЅРµРѕС‚РїСЂР°РІР»РµРЅРЅС‹С… Р»РѕРіРѕРІ
 Private Function getFullPathToUserLogsStorage() As String
     getFullPathToUserLogsStorage = getEnv("USERPROFILE") & "\" & NAME_FILE_LOG_STORAGE
-    
-    Call debugSystem("путь к хранилищу логов", getFullPathToUserLogsStorage)
+
+    Call debugSystem("РїСѓС‚СЊ Рє С…СЂР°РЅРёР»РёС‰Сѓ Р»РѕРіРѕРІ", getFullPathToUserLogsStorage)
 End Function
 
-'Обработка ранее необработанных логов
+'РћР±СЂР°Р±РѕС‚РєР° СЂР°РЅРµРµ РЅРµРѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹С… Р»РѕРіРѕРІ
 Private Sub addSaveLogsStorageToBase()
     Dim logStorageNotBuild As Boolean: logStorageNotBuild = isLogStorageNotBuild()
 
     If (Not logStorageNotBuild) Then
-    
+
         Dim xml As New MSXML2.DOMDocument30
         Dim basicNode As IXMLDOMNode
         Dim fullPathToStorage As String: fullPathToStorage = getFullPathToUserLogsStorage
         xml.load fullPathToStorage
-        
+
         Set basicNode = xml.CloneNode(True).FirstChild
-                
+
         Dim countChild As Integer: countChild = basicNode.ChildNodes.Length
-        
+
         If (countChild > 0) Then
             Dim c  As Integer
-            
+
             For c = 0 To countChild
                 Dim childLog As IXMLDOMNode
                 Set childLog = basicNode.ChildNodes.Item(c)
-                
+
                 Dim statusTextResponse As String
                 statusTextResponse = logSendToBase(childLog.xml)
-            
+
                 If Err.Number > 0 Or statusTextResponse <> STATUS_OK Then
-                'ВАЖНО! Функция [logSendToBase] использует On Error resume next для отлова ошибок вне функции
-                'после обработки ошибки необходимо восстановить нормальную обработку ошибок
+                'Р’РђР–РќРћ! Р¤СѓРЅРєС†РёСЏ [logSendToBase] РёСЃРїРѕР»СЊР·СѓРµС‚ On Error resume next РґР»СЏ РѕС‚Р»РѕРІР° РѕС€РёР±РѕРє РІРЅРµ С„СѓРЅРєС†РёРё
+                'РїРѕСЃР»Рµ РѕР±СЂР°Р±РѕС‚РєРё РѕС€РёР±РєРё РЅРµРѕР±С…РѕРґРёРјРѕ РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ РЅРѕСЂРјР°Р»СЊРЅСѓСЋ РѕР±СЂР°Р±РѕС‚РєСѓ РѕС€РёР±РѕРє
                 On Error GoTo 0
-                        'если после попытки внесения появилась ошибка,
-                        'значит сохраняем то что еще не внесли и выходим
+                        'РµСЃР»Рё РїРѕСЃР»Рµ РїРѕРїС‹С‚РєРё РІРЅРµСЃРµРЅРёСЏ РїРѕСЏРІРёР»Р°СЃСЊ РѕС€РёР±РєР°,
+                        'Р·РЅР°С‡РёС‚ СЃРѕС…СЂР°РЅСЏРµРј С‚Рѕ С‡С‚Рѕ РµС‰Рµ РЅРµ РІРЅРµСЃР»Рё Рё РІС‹С…РѕРґРёРј
                         Exit For
 
                     Else
-                        'при удачном внесении удаляем лог
-                        'и пересчитываем кол-во + счетчик на 0
+                        'РїСЂРё СѓРґР°С‡РЅРѕРј РІРЅРµСЃРµРЅРёРё СѓРґР°Р»СЏРµРј Р»РѕРі
+                        'Рё РїРµСЂРµСЃС‡РёС‚С‹РІР°РµРј РєРѕР»-РІРѕ + СЃС‡РµС‚С‡РёРє РЅР° 0
                         basicNode.RemoveChild childLog
                         countChild = basicNode.ChildNodes.Length
                         c = -1
-                        'считаем, если детей не осталось, выходим из цикла
+                        'СЃС‡РёС‚Р°РµРј, РµСЃР»Рё РґРµС‚РµР№ РЅРµ РѕСЃС‚Р°Р»РѕСЃСЊ, РІС‹С…РѕРґРёРј РёР· С†РёРєР»Р°
                         If (countChild = 0) Then Exit For
                 End If
-            
+
             Next c
-            
+
             Dim logsNode As IXMLDOMNodeList
             Set logsNode = xml.getElementsByTagName(NODE_LOGS)
             Dim basicNodeForDelete As IXMLDOMNode
@@ -393,7 +393,7 @@ Private Sub addSaveLogsStorageToBase()
             xml.appendChild basicNode
             xml.Save fullPathToStorage
         End If
-        
+
     End If
 End Sub
 
@@ -401,7 +401,7 @@ End Sub
 Private Function getUsername(un As String) As String
     If (un = "") Then
         Dim username As String: username = getEnv("USERNAME")
-        Call debugSystem("имя пользователя", username)
+        Call debugSystem("РёРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ", username)
         getUsername = username
     Else
         getUsername = un
@@ -410,7 +410,7 @@ End Function
 
 Private Function getComputerName() As String
     Dim computerName As String: computerName = getEnv("COMPUTERNAME")
-    Call debugSystem("имя компьютера", computerName)
+    Call debugSystem("РёРјСЏ РєРѕРјРїСЊСЋС‚РµСЂР°", computerName)
     getComputerName = computerName
 End Function
 
@@ -438,11 +438,11 @@ End Function
 Private Function getReceiptDate() As String
     Dim receiptDate As String
     receiptDate = Format(Now(), "yyyy-MM-dd hh:mm:ss")
-    Call debugSystem("дата лога", receiptDate)
+    Call debugSystem("РґР°С‚Р° Р»РѕРіР°", receiptDate)
     getReceiptDate = receiptDate
 End Function
 
-'Внутренний метод логирования
+'Р’РЅСѓС‚СЂРµРЅРЅРёР№ РјРµС‚РѕРґ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 Private Sub debugSystem(textDebug As String, valDebug)
     If (DEBUG_MODE) Then
     
@@ -454,4 +454,3 @@ Private Sub debugSystem(textDebug As String, valDebug)
         
     End If
 End Sub
-
